@@ -26,6 +26,8 @@ pragma solidity ^0.8.20;
  * 网络：BSC 主网 56 / 测试网 97
  * 编译：solc 0.8.20，Optimizer runs = 200，EVM shanghai
  * 部署顺序：Hash2 → Hash3 → ShieldVerifier → PrivacyFactory(hash2, hash3, verifier)
+ * Remix 的 Contract 下拉框不要选 IHash2、IHash3、IShieldVerifier、IERC20、PoseidonT3、PoseidonT4。
+ * 这些是接口或库，没有可部署字节码，会提示 contract may be abstract。
  *
  * 仓库里的验证密钥是本机生成的 pot13，再加上单方 phase-2，只适合功能测试。
  * 它没有使用 Hermez 公开仪式。掌握仪式随机数的人可以伪造证明、转走池子里的资产。

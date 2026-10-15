@@ -46,6 +46,8 @@ commitment = Poseidon(secret, 收款人地址)
 
 编译器 `0.8.20`，Optimizer runs = `200`，EVM `shanghai`。网络必须是 BSC 主网 56 或测试网 97。
 
+Remix 右侧 Contract 下拉框必须选下面四个名字。选中 `PoseidonT3`、`PoseidonT4`、`IHash2`、`IHash3`、`IShieldVerifier` 或 `IERC20` 时，Deploy 会提示 “This contract may be abstract”。那不是编译失败，只是选错了合约。
+
 按顺序部署，后一个的构造参数填前一个的地址：
 
 1. `contracts/zk/Hash2.sol` 里的 `Hash2`

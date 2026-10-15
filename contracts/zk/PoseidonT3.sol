@@ -1,6 +1,7 @@
 /// SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0;
 
+/// @notice 不要部署本库。Remix 里打开 Hash2.sol，Contract 下拉框选择 Hash2。
 library PoseidonT3 {
   uint constant M00 = 0x109b7f411ba0e4c9b2b70caf5c36a7b194be7c11ad24378bfedb68592ba8118b;
   uint constant M01 = 0x2969f27eed31a480b9c36c764379dbca2cc8fdd1415c3dded62940bcde0bd771;

@@ -1,6 +1,7 @@
 /// SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0;
 
+/// @notice 不要部署本库。Remix 里打开 Hash3.sol，Contract 下拉框选择 Hash3。
 library PoseidonT4 {
   uint constant F = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 

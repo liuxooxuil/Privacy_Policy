@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BSC 测试网隐私转账</title>
+  <script src="https://cdn.jsdelivr.net/npm/snarkjs@0.7.6/build/snarkjs.min.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font: 16px/1.5 "Segoe UI", sans-serif; background: #f4f6f8; color: #1c2430; }
+    main { max-width: 760px; margin: 0 auto; padding: 28px 18px 64px; }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    h2 { font-size: 18px; margin: 0 0 12px; }
+    p { margin: 0 0 12px; }
+    section { background: #fff; border: 1px solid #d8dee6; border-radius: 12px; padding: 16px; margin-top: 14px; }
+    label { display: block; font-size: 14px; margin: 12px 0 4px; }
+    input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #c5ced8; border-radius: 8px; font: inherit; }
+    button { margin-top: 14px; margin-right: 8px; padding: 10px 14px; border: 0; border-radius: 8px; background: #0b6b4f; color: #fff; font: inherit; cursor: pointer; }
+    button.secondary { background: #314155; }
+    button:disabled { opacity: 0.55; cursor: default; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .muted { color: #5c6b7a; font-size: 14px; }
+    .warn { background: #fff6e8; border: 1px solid #efd3a0; border-radius: 8px; padding: 10px 12px; }
+    .ok { background: #e8f7ef; border: 1px solid #b7e0c8; border-radius: 8px; padding: 10px 12px; }
+    .bad { background: #fdecec; border: 1px solid #f0c2c2; border-radius: 8px; padding: 10px 12px; }
+    code, .mono { font-family: Consolas, monospace; word-break: break-all; }
+    a { color: #0b57d0; }
+    pre { white-space: pre-wrap; word-break: break-all; background: #f7f9fb; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>BSC 测试网隐私转账</h1>
+  <p class="muted">向一个地址存入 tBNB 或一种 BEP20，然后检查这笔存款交易里有没有收款地址。工厂：<span class="mono" id="factoryLabel"></span></p>
+  <div id="fileBanner" class="bad" hidden>请不要直接双击打开这个文件。在项目目录执行 <span class="mono">npx --yes serve -p 4173</span>，然后打开 <span class="mono">http://localhost:4173/testnet.html</span>。</div>
+
+  <section>
+    <h2>1. 连接钱包</h2>
+    <div class="row">
+      <button id="connectBtn" type="button">连接 MetaMask</button>
+      <span id="accountLabel" class="muted">未连接</span>
+    </div>
+    <p class="muted">网络必须是 BNB Smart Chain Testnet，链 ID 97。Gas 用 tBNB。收款地址请填另一个钱包；如果付款人和收款人是同一个地址，区块浏览器上仍看得到付款人。</p>
+  </section>
+
+  <section>
+    <h2>2. 存款并检查是否隐藏</h2>
+    <label for="recipient">收款钱包地址</label>
+    <input id="recipient" placeholder="0x..." autocomplete="off" />
+    <label for="amount">数量</label>
+    <input id="amount" value="0.01" autocomplete="off" />
+    <label for="token">代币合约（留空表示 tBNB）</label>
+    <input id="token" placeholder="留空 = tBNB；填写则先 approve 再存入" autocomplete="off" />
+    <label for="decimals">代币小数位</label>
+    <input id="decimals" value="18" />
+    <button id="depositBtn" type="button" disabled>存款并检查</button>
+    <div id="secretBox" hidden></div>
+    <div id="depositResult"></div>
+  </section>
+
+  <section>
+    <h2>3. 提现对照</h2>
+    <p class="muted">提现会把资金打给上面绑定的收款地址，所以这一笔交易里看得到收款地址。用来和存款对比。证明在浏览器里生成，第一笔大约需要十几秒。</p>
+    <button id="withdrawBtn" class="secondary" type="button" disabled>用刚才的票据提现</button>
+    <div id="withdrawResult"></div>
+  </section>
+</main>
+<script type="module">
+import { ethers } from "https://esm.sh/ethers@6.13.5";
+import { buildPoseidon } from "https://esm.sh/circomlibjs@0.1.7";
+
+const FACTORY = "0x70FE93C6D6166Ba6Ee8585a347D734F76466Acbf";
+const CHAIN_ID = 97n;
+const FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+const NULLIFIER_DOMAIN = 1n << 160n;
+const LEVELS = 16;
+const ABI = [
+  "function deposit(bytes32 commitment) payable",
+  "function depositToken(address token, uint256 amount, bytes32 commitment)",
+  "function proofOf(uint256 leafIndex) view returns (uint256 root, uint256[16] siblings, uint256[16] indices)",
+  "function withdraw(uint256[2] pA, uint256[2][2] pB, uint256[2] pC, uint256[9] pubSignals)",
+  "event Deposited(uint256 indexed commitment, uint256 indexed token, uint256 amount, uint32 leafIndex, uint256 leaf)",
+  "event Withdrawn(uint256 indexed nullifier, uint256 indexed token, address indexed recipient, uint256 amountOut, uint256 fee)"
+];
+const ERC20_ABI = [
+  "function decimals() view returns (uint8)",
+  "function approve(address spender, uint256 amount) returns (bool)"
+];
+
+const $ = (id) => document.getElementById(id);
+$("factoryLabel").textContent = FACTORY;
+if (location.protocol === "file:") $("fileBanner").hidden = false;
+
+let poseidon;
+let provider;
+let signer;
+let account;
+let noteSession;
+
+function logBox(el, html, kind) {
+  el.hidden = false;
+  el.className = kind;
+  el.innerHTML = html;
+}
+
+function toBig(value) {
+  const out = poseidon.F.toObject(value);
+  return typeof out === "bigint" ? out : BigInt(out.toString());
+}
+
+function hash(inputs) {
+  return toBig(poseidon(inputs.map((item) => BigInt(item))));
+}
+
+function randomSecret() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let secret = BigInt("0x" + [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("")) % FIELD;
+  if (secret === 0n) secret = 1n;
+  return secret;
+}
+
+function createNote(owner) {
+  const secret = randomSecret();
+  const ownerN = BigInt(owner);
+  return { secret, owner: ownerN, commitment: hash([secret, ownerN]) };
+}
+
+function nullifierOf(secret) {
+  return hash([BigInt(secret), NULLIFIER_DOMAIN]);
+}
+
+function leafOf(commitment, amount, token) {
+  return hash([BigInt(commitment), BigInt(amount), BigInt(token)]);
+}
+
+function findAddress(address, tx, receipt) {
+  const needle = address.toLowerCase().slice(2);
+  if ((tx.data || "").toLowerCase().includes(needle)) return "交易 calldata";
+  for (const log of receipt.logs) {
+    if ((log.data || "").toLowerCase().includes(needle)) return "事件 data";
+    for (const topic of log.topics || []) {
+      if (topic.toLowerCase().includes(needle)) return "事件 topic";
+    }
+  }
+  return "";
+}
+
+function txLink(hash) {
+  return `<a href="https://testnet.bscscan.com/tx/${hash}" target="_blank" rel="noreferrer">${hash}</a>`;
+}
+
+async function ensurePoseidon() {
+  if (!poseidon) poseidon = await buildPoseidon();
+}
+
+async function connect() {
+  if (!window.ethereum) throw new Error("没有检测到 MetaMask");
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+  try {
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x61" }] });
+  } catch (error) {
+    if (error.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: "0x61",
+          chainName: "BNB Smart Chain Testnet",
+          nativeCurrency: { name: "tBNB", symbol: "tBNB", decimals: 18 },
+          rpcUrls: ["https://data-seed-prebsc-1-s1.binance.org:8545"],
+          blockExplorerUrls: ["https://testnet.bscscan.com"]
+        }]
+      });
+    } else {
+      throw error;
+    }
+  }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  const network = await provider.getNetwork();
+  if (network.chainId !== CHAIN_ID) throw new Error("当前不是 BSC 测试网 97");
+  signer = await provider.getSigner();
+  account = await signer.getAddress();
+  $("accountLabel").textContent = account;
+  $("depositBtn").disabled = false;
+}
+
+async function proveWithdraw(note, amount, token, leafIndex) {
+  const factory = new ethers.Contract(FACTORY, ABI, signer);
+  const proof = await factory.proofOf(leafIndex);
+  const input = {
+    root: BigInt(proof.root).toString(),
+    nullifierHash: nullifierOf(note.secret).toString(),
+    newLeaf: "0",
+    changeLeaf: "0",
+    recipient: BigInt(note.owner).toString(),
+    relayer: "0",
+    fee: "0",
+    amountOut: BigInt(amount).toString(),
+    token: BigInt(token).toString(),
+    secret: BigInt(note.secret).toString(),
+    owner: BigInt(note.owner).toString(),
+    amount: BigInt(amount).toString(),
+    pathElements: [...proof.siblings].map((item) => BigInt(item).toString()),
+    pathIndices: [...proof.indices].map((item) => BigInt(item).toString()),
+    sendAmount: "0",
+    changeAmount: "0",
+    newCommitment: "0",
+    changeCommitment: "0"
+  };
+  if (input.pathElements.length !== LEVELS) throw new Error("Merkle 路径长度不对");
+  const wasm = new URL("./zk-artifacts/shield.wasm", window.location.href).href;
+  const zkey = new URL("./zk-artifacts/shield_final.zkey", window.location.href).href;
+  const { proof: zkProof, publicSignals } = await window.snarkjs.groth16.fullProve(input, wasm, zkey);
+  const raw = await window.snarkjs.groth16.exportSolidityCallData(zkProof, publicSignals);
+  const args = JSON.parse(`[${raw}]`);
+  return { pA: args[0], pB: args[1], pC: args[2], pubSignals: args[3] };
+}
+
+$("connectBtn").onclick = async () => {
+  try {
+    await connect();
+  } catch (error) {
+    $("accountLabel").textContent = error.shortMessage || error.message;
+  }
+};
+
+$("depositBtn").onclick = async () => {
+  const result = $("depositResult");
+  const secretBox = $("secretBox");
+  $("depositBtn").disabled = true;
+  $("withdrawBtn").disabled = true;
+  try {
+    await ensurePoseidon();
+    const recipient = ethers.getAddress($("recipient").value.trim());
+    const tokenText = $("token").value.trim();
+    const tokenAddress = tokenText ? ethers.getAddress(tokenText) : null;
+    const decimals = Number($("decimals").value || "18");
+    const amount = ethers.parseUnits($("amount").value.trim(), tokenAddress ? decimals : 18);
+    if (amount <= 0n) throw new Error("数量要大于 0");
+    const note = createNote(recipient);
+    const commitment = ethers.zeroPadValue(ethers.toBeHex(note.commitment), 32);
+    logBox(secretBox, `<strong>secret，只留在本页，不要写进交易：</strong><br><span class="mono">${note.secret.toString()}</span>`, "warn");
+
+    const factory = new ethers.Contract(FACTORY, ABI, signer);
+    let tx;
+    if (!tokenAddress) {
+      tx = await factory.deposit(commitment, { value: amount });
+    } else {
+      const erc20 = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+      const approveTx = await erc20.approve(FACTORY, amount);
+      await approveTx.wait();
+      tx = await factory.depositToken(tokenAddress, amount, commitment);
+    }
+    const receipt = await tx.wait();
+    const fullTx = await provider.getTransaction(receipt.hash);
+    const parsed = receipt.logs.map((log) => {
+      try { return factory.interface.parseLog(log); } catch { return null; }
+    }).find((item) => item && item.name === "Deposited");
+    if (!parsed) throw new Error("没有找到 Deposited 事件");
+    const where = findAddress(recipient, fullTx, receipt);
+    const sameWallet = fullTx.from.toLowerCase() === recipient.toLowerCase();
+    noteSession = {
+      note,
+      amount: parsed.args.amount,
+      token: tokenAddress ? BigInt(tokenAddress) : 0n,
+      leafIndex: parsed.args.leafIndex
+    };
+    $("withdrawBtn").disabled = false;
+    const hidden = where === "";
+    logBox(result, `
+      <strong>${hidden ? "存款交易里没有收款地址。" : "收款地址出现了，隐藏失败。"}</strong>
+      <p>出现位置：${hidden ? "无" : where}</p>
+      <p>付款人（仍然公开）：<span class="mono">${fullTx.from}</span></p>
+      ${sameWallet ? "<p>这次付款人和收款人是同一个钱包，所以浏览器上的 From 就是收款人。换一个不同的收款地址再存一笔，才能看出收款人被藏住。</p>" : ""}
+      <p>金额（仍然公开）：<span class="mono">${parsed.args.amount.toString()}</span>，叶子序号 ${parsed.args.leafIndex.toString()}</p>
+      <p>交易：${txLink(receipt.hash)}</p>
+    `, hidden ? "ok" : "bad");
+  } catch (error) {
+    logBox(result, error.shortMessage || error.message, "bad");
+  } finally {
+    $("depositBtn").disabled = false;
+  }
+};
+
+$("withdrawBtn").onclick = async () => {
+  const result = $("withdrawResult");
+  $("withdrawBtn").disabled = true;
+  try {
+    if (!noteSession) throw new Error("请先完成存款");
+    await ensurePoseidon();
+    const args = await proveWithdraw(noteSession.note, noteSession.amount, noteSession.token, noteSession.leafIndex);
+    const factory = new ethers.Contract(FACTORY, ABI, signer);
+    const tx = await factory.withdraw(args.pA, args.pB, args.pC, args.pubSignals);
+    const receipt = await tx.wait();
+    const fullTx = await provider.getTransaction(receipt.hash);
+    const recipient = ethers.getAddress("0x" + noteSession.note.owner.toString(16).padStart(40, "0"));
+    const where = findAddress(recipient, fullTx, receipt);
+    logBox(result, `
+      <strong>提现完成。收款地址${where ? "出现在" + where : "没有出现在收据里"}。</strong>
+      <p>这一步本来就会公开最终收款地址。存款那一步才是隐藏检查。</p>
+      <p>交易：${txLink(receipt.hash)}</p>
+    `, "warn");
+  } catch (error) {
+    logBox(result, error.shortMessage || error.message, "bad");
+    $("withdrawBtn").disabled = false;
+  }
+};
+</script>
+</body>
+</html>
