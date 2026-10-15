@@ -1,0 +1,19 @@
+{
+  "name": "privacy-factory",
+  "private": true,
+  "scripts": {
+    "build:zk": "node script/build-zk.js",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "chai": "^4.5.0",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18",
+    "poseidon-solidity": "^0.0.5",
+    "snarkjs": "^0.7.5"
+  }
+}
