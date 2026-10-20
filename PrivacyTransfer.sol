@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 /**
  * @title PrivacyTransfer
- * @notice BNB Smart Chain 隐匿转账合约：存款与合约内划转不出现收款钱包地址。
+ * @notice 隐匿转账合约：存款与合约内划转不出现收款钱包地址。
  *
  * 原理
  * - 收款人链下生成 secret，计算
@@ -28,7 +28,7 @@ pragma solidity ^0.8.20;
  *     [secret, recipientAddress]
  *   );
  *
- * 网络：BSC 主网 56 / 测试网 97
+ * 网络：以太坊主网 1 / Sepolia 11155111，以及 BSC 主网 56 / 测试网 97
  */
 
 interface IERC20 {
@@ -85,7 +85,8 @@ contract PrivacyTransfer {
     }
 
     constructor() {
-        if (block.chainid != 56 && block.chainid != 97) revert UnsupportedChain();
+        uint256 id = block.chainid;
+        if (id != 1 && id != 11155111 && id != 56 && id != 97) revert UnsupportedChain();
     }
 
     receive() external payable {
@@ -104,7 +105,7 @@ contract PrivacyTransfer {
     }
 
     // 存款交易 calldata 只有 commitment，没有收款地址
-    /// @notice 存入 BNB，记到承诺名下。address(0) 表示原生 BNB。
+    /// @notice 存入原生币，记到承诺名下。address(0) 表示 ETH 或 BNB。
     function deposit(bytes32 commitment) external payable nonReentrant {
         if (msg.value == 0) revert ZeroAmount();
         _createNote(commitment, address(0), msg.value);

@@ -23,15 +23,16 @@ pragma solidity ^0.8.20;
  *
  * 每个 secret 只能花费一次。承诺绑错地址、secret 丢失、或树满后无法再存，资金都没有管理员可以找回。
  *
- * 网络：BSC 主网 56 / 测试网 97
+ * 网络：以太坊主网 1 / Sepolia 11155111，以及 BSC 主网 56 / 测试网 97
  * 编译：solc 0.8.20，Optimizer runs = 200，EVM shanghai
  * 部署顺序：Hash2 → Hash3 → ShieldVerifier → PrivacyFactory(hash2, hash3, verifier)
  * Remix 的 Contract 下拉框不要选 IHash2、IHash3、IShieldVerifier、IERC20、PoseidonT3、PoseidonT4。
  * 这些是接口或库，没有可部署字节码，会提示 contract may be abstract。
  *
- * 仓库里的验证密钥是本机生成的 pot13，再加上单方 phase-2，只适合功能测试。
- * 它没有使用 Hermez 公开仪式。掌握仪式随机数的人可以伪造证明、转走池子里的资产。
- * 主网放真实资金之前，必须用公开 phase-1 和多方 phase-2 重新生成 contracts/zk/Verifier.sol。
+ * 仓库里当前提交的验证密钥仍是本机单方 phase-2，只适合功能测试。
+ * 掌握那次随机数的人可以伪造证明、转走池子里的资产。
+ * 主网密钥要用 Hermez 的 pot13，并由 script/finalize-zk.js 在至少两份人类贡献之后导出。
+ * script/build-zk.js 只准备初始 zkey，不会改写 Verifier.sol。已部署的工厂换不了验证器。
  */
 
 interface IHash2 {
@@ -140,7 +141,8 @@ contract PrivacyFactory {
     }
 
     constructor(address hash2_, address hash3_, address verifier_) {
-        if (block.chainid != 56 && block.chainid != 97) revert UnsupportedChain();
+        uint256 id = block.chainid;
+        if (id != 1 && id != 11155111 && id != 56 && id != 97) revert UnsupportedChain();
         if (hash2_ == address(0) || hash3_ == address(0) || verifier_ == address(0)) revert ZeroAddress();
         hash2 = IHash2(hash2_);
         hash3 = IHash3(hash3_);
@@ -187,7 +189,7 @@ contract PrivacyFactory {
     // 存款。calldata 里没有收款钱包。
     // ---------------------------------------------------------------------
 
-    /// @notice 存入 BNB。address(0) 表示原生 BNB。
+    /// @notice 存入原生币。address(0) 表示 ETH 或 BNB。
     function deposit(bytes32 commitment) external payable nonReentrant {
         _open(address(0), msg.value, uint256(commitment));
     }

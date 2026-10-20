@@ -1,6 +1,6 @@
 # BNB Smart Chain 隐私协议与隐匿转账 — 使用文档
 
-本仓库包含三个独立合约，部署在 **BNB Smart Chain（币安智能链）**：
+本仓库包含三个独立合约，可部署在 **以太坊** 或 **BNB Smart Chain**：
 
 | 文件 | 合约 | 作用 |
 |------|------|------|
@@ -10,8 +10,10 @@
 
 `PrivacyPolicy` 与 `PrivacyTransfer` 无依赖，可分别部署。零知识池要按下面的顺序部署四个合约。`PrivacyTransfer` 不是零知识合约，secret 会出现在花费交易里。
 
-- 主网 Chain ID：`56`（[BscScan](https://bscscan.com)）
-- 测试网 Chain ID：`97`（[BscScan Testnet](https://testnet.bscscan.com)）
+- 以太坊主网 Chain ID：`1`（[Etherscan](https://etherscan.io)）
+- 以太坊测试网 Sepolia Chain ID：`11155111`（[Sepolia Etherscan](https://sepolia.etherscan.io)）
+- BSC 主网 Chain ID：`56`（[BscScan](https://bscscan.com)）
+- BSC 测试网 Chain ID：`97`（[BscScan Testnet](https://testnet.bscscan.com)）
 - 编译器：Solidity `0.8.20` 或更高
 - Optimizer：建议开启，runs = `200`
 
@@ -40,11 +42,20 @@ commitment = Poseidon(secret, 收款人地址)
 
 `newIndex` 或 `changeIndex` 等于 `2^32 - 1` 时，表示这一侧没有新叶子。
 
-当前仓库里的 `contracts/zk/Verifier.sol` 来自本机仪式，**只能做功能测试**。掌握仪式随机数的人可以伪造证明。主网放真实资金前，要用公开 phase-1 和多方 phase-2 重新生成验证合约。
+当前仓库里的 `contracts/zk/Verifier.sol` 仍是本机单方 phase-2，**只能做功能测试**。掌握那次随机数的人可以伪造证明。`npm run build:zk` 只会下载 Hermez 的 `powersOfTau28_hez_final_13.ptau` 并生成陷门已知的初始 zkey，不会改写验证合约。主网密钥要由至少两名参与者在不同机器上各贡献一次，再用最后一次贡献公开之后才出现的比特币区块哈希封口：
+
+```text
+npm run build:zk
+npm run ceremony:contribute -- build/shield_0000.zkey build/shield_0001.zkey --name "第一位"
+npm run ceremony:contribute -- build/shield_0001.zkey build/shield_0002.zkey --name "第二位"
+npm run ceremony:finalize -- --zkey build/shield_0002.zkey --beacon <64位区块哈希>
+```
+
+`ceremony:finalize` 会拒绝只有一份人类贡献、名字重复、以及 beacon 使用公开常量的 zkey。导出之后要部署新的 `ShieldVerifier` 和新的 `PrivacyFactory`。已经部署的工厂仍指向旧验证器。
 
 ### 0.1 部署
 
-编译器 `0.8.20`，Optimizer runs = `200`，EVM `shanghai`。网络必须是 BSC 主网 56 或测试网 97。
+编译器 `0.8.20`，Optimizer runs = `200`，EVM `shanghai`。网络必须是以太坊主网 `1`、Sepolia `11155111`、BSC 主网 `56` 或 BSC 测试网 `97`。
 
 Remix 右侧 Contract 下拉框必须选下面四个名字。选中 `PoseidonT3`、`PoseidonT4`、`IHash2`、`IHash3`、`IShieldVerifier` 或 `IERC20` 时，Deploy 会提示 “This contract may be abstract”。那不是编译失败，只是选错了合约。
 
@@ -57,12 +68,7 @@ Remix 右侧 Contract 下拉框必须选下面四个名字。选中 `PoseidonT3`
 
 Remix 需要把 `contracts/` 和 `contracts/zk/` 一起放进工程。`PoseidonT3.sol`、`PoseidonT4.sol` 要和 `Hash2`、`Hash3` 在同一目录。
 
-证明在浏览器或 Node 里生成，用仓库里的 `sdk/privacy.js`、`zk-artifacts/shield.wasm` 和 `zk-artifacts/shield_final.zkey`。重新生成密钥：
-
-```text
-npm install
-node script/build-zk.js
-```
+证明在浏览器或 Node 里生成，用仓库里的 `sdk/privacy.js`、`zk-artifacts/shield.wasm` 和 `zk-artifacts/shield_final.zkey`。测试用的这把 zkey 和上面的单方验证合约是一对。主网要等 `ceremony:finalize` 换过这两份文件后再部署。
 
 ### 0.2 收款人生成承诺
 
@@ -193,17 +199,15 @@ change.amount = changeAmount;
 ### 2.1 准备钱包
 
 1. 安装 [MetaMask](https://metamask.io/)
-2. 添加 BSC 网络：
+2. 钱包切到目标网络。以太坊用主网或 Sepolia；BSC 仍可用。
 
-| 字段 | 主网 | 测试网 |
-|------|------|--------|
-| 网络名称 | BNB Smart Chain | BSC Testnet |
-| RPC | `https://bsc-dataseed.binance.org` | `https://data-seed-prebsc-1-s1.binance.org:8545` |
-| Chain ID | `56` | `97` |
-| 符号 | BNB | tBNB |
-| 浏览器 | `https://bscscan.com` | `https://testnet.bscscan.com` |
+| 字段 | 以太坊主网 | Sepolia | BSC 主网 | BSC 测试网 |
+|------|------------|---------|----------|------------|
+| Chain ID | `1` | `11155111` | `56` | `97` |
+| 符号 | ETH | ETH | BNB | tBNB |
+| 浏览器 | `https://etherscan.io` | `https://sepolia.etherscan.io` | `https://bscscan.com` | `https://testnet.bscscan.com` |
 
-3. 测试网领水：https://testnet.bnbchain.org/faucet-smart
+3. Sepolia 领测试 ETH。BSC 测试网领水：https://testnet.bnbchain.org/faucet-smart
 
 ### 2.2 编译
 
@@ -410,7 +414,7 @@ const inner = ethers.keccak256(
       relayer,
       deadline,
       PRIVACY_TRANSFER,
-      56, // 测试网改 97
+      1, // Sepolia 改 11155111；BSC 主网 56，测试网 97
     ]
   )
 );
@@ -507,7 +511,7 @@ await policy.updatePolicy(
 
 | 错误 | 原因与处理 |
 |------|------------|
-| `UnsupportedChain` | 当前网络不是 BSC 56/97 |
+| `UnsupportedChain` | 当前网络不是以太坊 1、Sepolia 11155111、BSC 56 或 97 |
 | `ZeroAmount` | 存款或到账金额为 0 |
 | `InvalidSecret` | `secret` 或 `owner` 为空，或签名者不匹配 |
 | `InvalidCommitment` | 承诺为 0 |

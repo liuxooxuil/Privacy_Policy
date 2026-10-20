@@ -3,13 +3,13 @@ pragma solidity ^0.8.20;
 
 /**
  * @title PrivacyPolicy
- * @notice BNB Smart Chain（BSC / 币安智能链）DApp / 代币项目「隐私协议」链上模板。
+ * @notice 以太坊与 BNB Smart Chain 上的 DApp / 代币项目「隐私协议」链上模板。
  * @dev    部署前请替换构造参数中的项目名称、运营主体、联系邮箱、官网与完整协议 URI。
  *         本文件仅提供模板，不构成法律意见。上线前请由专业律师审阅。
  *
- * 网络：BNB Smart Chain 主网 chainId = 56，测试网 chainId = 97
+ * 网络：以太坊主网 chainId = 1，Sepolia = 11155111；BSC 主网 56，测试网 97
  * 编译：solc 0.8.20+，Optimizer 建议开启（runs = 200）
- * 验证：部署后请在 https://bscscan.com 开源*验证，便于用户查阅本协议全文。
+ * 验证：部署后请在对应区块浏览器开源验证，便于用户查阅本协议全文。
  *
  * =============================================================================
  * 隐私协议全文模板（部署后随源码在区块浏览器公开）
@@ -17,12 +17,12 @@ pragma solidity ^0.8.20;
  *
  * 【项目名称】隐私协议
  * 生效日期：[YYYY-MM-DD]
- * 适用网络：BNB Smart Chain（BSC，Chain ID 56）
+ * 适用网络：本合约部署所在的网络。以太坊主网 Chain ID 1，Sepolia 11155111。
  *
  * 一、引言与适用范围
  * 1.1 欢迎使用【项目名称】（下称「本项目」「我们」）。本隐私协议说明我们在您访问网站、
  *     DApp、智能合约或使用相关服务时，如何收集、使用、存储、共享与保护与您相关的信息。
- * 1.2 本协议适用于：官方网站、Web/移动 DApp、部署在 BNB Smart Chain 上的智能合约、
+ * 1.2 本协议适用于：官方网站、Web/移动 DApp、部署在本合约所在网络上的智能合约、
  *     以及我们官方公布的社交媒体与客户支持渠道。
  * 1.3 您连接钱包、发起交易、调用合约或继续使用服务，即表示您已阅读并同意本协议。
  *     如不同意，请立即停止使用。
@@ -33,7 +33,7 @@ pragma solidity ^0.8.20;
  *     b) 交易哈希、区块高度、时间戳、Gas、Nonce；
  *     c) 代币余额、授权额度（allowance）、合约调用数据（calldata）；
  *     d) 与本项目合约交互产生的事件日志（Event Logs）。
- *     上述数据一经上链即向全网公开，任何人均可通过 BscScan 等浏览器查询，我们无法删除或匿名化。
+ *     上述数据一经上链即向全网公开，任何人均可通过 Etherscan、BscScan 等浏览器查询，我们无法删除或匿名化。
  * 2.2 您主动提供的信息
  *     当您联系客服、填写表单、申请白名单或订阅通知时，可能提供电子邮箱、Telegram / Discord
  *     账号、国家或地区等。请勿向我们发送种子短语、私钥或验证码。
@@ -52,7 +52,7 @@ pragma solidity ^0.8.20;
  * 3.6 处理争议、执行本协议及保护我们与用户的合法权益。
  *
  * 四、区块链公开性与不可撤销性（请务必阅读）
- * 4.1 BNB Smart Chain 是公开账本。钱包地址、交易金额、合约调用内容默认对任何人可见。
+ * 4.1 本合约所在区块链是公开账本。钱包地址、交易金额、合约调用内容默认对任何人可见。
  * 4.2 链上数据具有不可篡改、不可删除的特性。您无法要求我们或验证者「删除」已经上链的记录。
  * 4.3 钱包地址具有假名性，但可能通过链上分析、交易所 KYC、社交暴露等方式与真实身份关联。
  * 4.4 向合约转入资产、授权代币或签名消息前，请自行评估公开性与风险。
@@ -60,8 +60,8 @@ pragma solidity ^0.8.20;
  * 五、信息共享与第三方
  * 5.1 我们不会出售您的个人信息。
  * 5.2 为实现服务，信息可能被以下类别的第三方处理或由其独立收集：
- *     a) 区块链基础设施：RPC 节点、验证者、索引服务（如 The Graph）、区块浏览器（BscScan）；
- *     b) 去中心化协议：PancakeSwap 等 DEX、跨链桥、预言机（其自身协议与隐私政策独立适用）；
+ *     a) 区块链基础设施：RPC 节点、验证者、索引服务（如 The Graph）、区块浏览器（Etherscan、BscScan）；
+ *     b) 去中心化协议：Uniswap、PancakeSwap 等 DEX、跨链桥、预言机（其自身协议与隐私政策独立适用）；
  *     c) 钱包与浏览器插件：由对应钱包服务商按其政策处理；
  *     d) 云服务、CDN、分析与客服工具（如使用）；
  *     e) 专业顾问（律师、审计）及依法有权要求披露的监管或司法机关。
@@ -73,7 +73,7 @@ pragma solidity ^0.8.20;
  * 6.2 您可在浏览器中拒绝或清除 Cookie，但这可能影响部分功能（如保持钱包连接状态）。
  *
  * 七、数据存储、期限与跨境
- * 7.1 链上数据永久存储于 BNB Smart Chain 全球节点。
+ * 7.1 链上数据永久存储于本合约所在网络的全球节点。
  * 7.2 链下数据（客服邮件、表单、日志）仅在实现本协议目的所必需的期限内保留，到期后删除或匿名化，
  *     法律法规要求更长期限的除外。
  * 7.3 因区块链与云服务的分布式特性，数据可能在您所在司法辖区以外处理。使用本服务即理解该等传输。
@@ -89,7 +89,7 @@ pragma solidity ^0.8.20;
  * 9.2 撤回对链下数据处理的同意（不影响撤回前基于同意的处理）；
  * 9.3 要求删除链下个人数据（法律另有规定或存在合法保留理由的除外）；
  * 9.4 通过断开钱包、停用 DApp 访问停止向我们提供新的前端技术信息。
- * 9.5 限制：已经写入 BNB Smart Chain 的交易与事件无法删除、修改或「被遗忘」。
+ * 9.5 限制：已经写入区块链的交易与事件无法删除、修改或「被遗忘」。
  * 行使权利请联系文末邮箱。为防止冒用，我们可能要求您证明对相关钱包或联系方式的控制权。
  *
  * 十、儿童隐私
@@ -112,9 +112,9 @@ pragma solidity ^0.8.20;
  *
  * 十四、联系我们
  * 运营主体：【运营主体名称】
- * 电子邮箱：【contact@example.com】
+ * 电子邮箱：【contact(at)example.com】
  * 官方网站：【https://example.com】
- * 合约网络：BNB Smart Chain（Chain ID 56）
+ * 合约网络：以链上 chainId() 为准。以太坊主网为 1，Sepolia 为 11155111。
  *
  * =============================================================================
  */
@@ -197,7 +197,8 @@ contract PrivacyPolicy {
         bytes32 _contentHash,
         string memory _documentURI
     ) {
-        if (block.chainid != 56 && block.chainid != 97) revert UnsupportedChain();
+        uint256 id = block.chainid;
+        if (id != 1 && id != 11155111 && id != 56 && id != 97) revert UnsupportedChain();
         if (bytes(_projectName).length == 0) revert EmptyField();
         if (bytes(_operatorName).length == 0) revert EmptyField();
         if (bytes(_contactEmail).length == 0) revert EmptyField();
@@ -226,6 +227,8 @@ contract PrivacyPolicy {
     }
 
     function networkName() external view returns (string memory) {
+        if (block.chainid == 1) return "Ethereum Mainnet";
+        if (block.chainid == 11155111) return "Sepolia";
         if (block.chainid == 56) return "BNB Smart Chain Mainnet";
         if (block.chainid == 97) return "BNB Smart Chain Testnet";
         return "Unknown";
@@ -302,7 +305,7 @@ contract PrivacyPolicy {
     function sectionBody(uint256 id) public pure returns (string memory) {
         if (id == 1) {
             return unicode"本协议说明项目在您访问网站、DApp、智能合约或使用服务时如何处理相关信息。"
-                unicode"适用于官方网站、Web/移动 DApp、BNB Smart Chain 上的智能合约及官方支持渠道。"
+                unicode"适用于官方网站、Web/移动 DApp、本合约所在网络上的智能合约及官方支持渠道。"
                 unicode"连接钱包、发起交易或继续使用即表示您已阅读并同意本协议。";
         }
         if (id == 2) {
@@ -315,11 +318,11 @@ contract PrivacyPolicy {
                 unicode"我们不会出售个人信息。";
         }
         if (id == 4) {
-            return unicode"BNB Smart Chain 为公开账本。地址、金额与调用数据默认可见，且不可篡改、不可删除。"
+            return unicode"本合约所在区块链为公开账本。地址、金额与调用数据默认可见，且不可篡改、不可删除。"
                 unicode"钱包地址具有假名性，仍可能与真实身份关联。交互前请自行评估公开性风险。";
         }
         if (id == 5) {
-            return unicode"为实现服务，数据可能由 RPC 节点、验证者、BscScan、索引服务、DEX、跨链桥、预言机、"
+            return unicode"为实现服务，数据可能由 RPC 节点、验证者、Etherscan、BscScan、索引服务、DEX、跨链桥、预言机、"
                 unicode"钱包厂商、云服务及依法有权机关处理。第三方适用其自身隐私政策。";
         }
         if (id == 6) {
@@ -336,7 +339,7 @@ contract PrivacyPolicy {
         }
         if (id == 9) {
             return unicode"在适用法律下，您可查阅、更正、删除链下个人信息或撤回同意。"
-                unicode"已写入 BNB Smart Chain 的记录无法删除或被遗忘。行使权利请联系运营方邮箱。";
+                unicode"已写入区块链的记录无法删除或被遗忘。行使权利请联系运营方邮箱。";
         }
         if (id == 10) {
             return unicode"本服务面向年满 18 周岁（或当地法定成年年龄）的用户。我们不会故意收集儿童个人信息。";
@@ -354,7 +357,7 @@ contract PrivacyPolicy {
         }
         if (id == 14) {
             return unicode"请以合约中 operatorName、contactEmail、website 字段为准联系我们。"
-                unicode"网络：BNB Smart Chain（主网 Chain ID 56）。";
+                unicode"网络以 chainId() 为准。以太坊主网为 1，Sepolia 为 11155111。";
         }
         return "";
     }

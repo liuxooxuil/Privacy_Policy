@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "build:zk": "node script/build-zk.js",
+    "ceremony:contribute": "node script/contribute-zk.js",
+    "ceremony:finalize": "node script/finalize-zk.js",
     "test": "hardhat test"
   },
   "devDependencies": {
