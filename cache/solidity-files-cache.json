@@ -1,0 +1,265 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "D:\\works\\Privacy_Policy\\contracts\\PrivacyFactory.sol": {
+      "lastModificationDate": 1792463906180,
+      "contentHash": "4be92a019c7af150b355e8ac3f023aab",
+      "sourceName": "contracts/PrivacyFactory.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "IERC20",
+        "IHash2",
+        "IHash3",
+        "IShieldVerifier",
+        "PrivacyFactory"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\test\\MockERC20.sol": {
+      "lastModificationDate": 1792037592363,
+      "contentHash": "30b382a7da152f5658a21d3a6eeffdd0",
+      "sourceName": "contracts/test/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MockERC20"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\zk\\PoseidonT3.sol": {
+      "lastModificationDate": 1792051808494,
+      "contentHash": "90a82fc33989468c43da6205b0b6073c",
+      "sourceName": "contracts/zk/PoseidonT3.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0"
+      ],
+      "artifacts": [
+        "PoseidonT3"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\zk\\PoseidonT4.sol": {
+      "lastModificationDate": 1792051808494,
+      "contentHash": "77058a9ea384461d66d380c16315361c",
+      "sourceName": "contracts/zk/PoseidonT4.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0"
+      ],
+      "artifacts": [
+        "PoseidonT4"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\zk\\Hash2.sol": {
+      "lastModificationDate": 1792038156739,
+      "contentHash": "8f6734de2cf2c6574ad04de34c661b13",
+      "sourceName": "contracts/zk/Hash2.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PoseidonT3.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Hash2"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\zk\\Hash3.sol": {
+      "lastModificationDate": 1792038156738,
+      "contentHash": "b716a06dfce0a11fc1e09cd97b40873c",
+      "sourceName": "contracts/zk/Hash3.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PoseidonT4.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Hash3"
+      ]
+    },
+    "D:\\works\\Privacy_Policy\\contracts\\zk\\Verifier.sol": {
+      "lastModificationDate": 1792459323972,
+      "contentHash": "81698345304f06c337c04f9f964d7ce5",
+      "sourceName": "contracts/zk/Verifier.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0 <0.9.0"
+      ],
+      "artifacts": [
+        "ShieldVerifier"
+      ]
+    }
+  }
+}
